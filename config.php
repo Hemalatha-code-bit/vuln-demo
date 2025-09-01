@@ -1,18 +1,21 @@
 <?php
-// config.php - for testing secret scanning
+// config.php - secure version
 
-$db_host = "localhost";
-$db_user = "root";
+// Load secrets from environment variables
+$db_host = getenv('DB_HOST') ?: 'localhost';
+$db_user = getenv('DB_USER') ?: 'root';
+$db_pass = getenv('DB_PASSWORD') ?: '';
+$database = getenv('DB_NAME') ?: 'testdb';
 
-// High-entropy password for testing Trufflehog detection
-$db_pass = "p@$$w0rd1234567890!ABCDEfghijkLMNOPQRST";
+// High-entropy API key from environment
+define('THIRD_PARTY_API_KEY', getenv('API_KEY') ?: '');
 
-// High-entropy API key for testing Trufflehog
-define('THIRD_PARTY_API_KEY', 'AKIA1234567890ABCDEF1234567890XYZ');
+// Create a database connection
+$conn = new mysqli($db_host, $db_user, $db_pass, $database);
 
-// Database connection
-$conn = new mysqli($db_host, $db_user, $db_pass, 'testdb');
+// Handle connection errors securely (do not reveal details to users)
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    error_log("Database connection failed: " . $conn->connect_error); // log internally
+    die("Database connection failed."); // generic message for users
 }
 ?>
