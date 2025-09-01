@@ -1,12 +1,21 @@
 <?php
-// index.php - intentionally vulnerable to SQL injection and reflected XSS
 require_once 'config.php';
 
+// Get user input safely
 $q = isset($_GET['q']) ? $_GET['q'] : '';
 
-// VULNERABLE: building query with unsanitized input -> SQL Injection
-$sql = "SELECT * FROM users WHERE username = '$q'";
-$result = $conn->query($sql);
+// Use prepared statements to prevent SQL injection
+$stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+$stmt->bind_param("s", $q); // "s" = string
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Output results safely (prevent XSS)
+while ($row = $result->fetch_assoc()) {
+    echo "<li>" . htmlspecialchars($row['username']) . " - " . htmlspecialchars($row['bio']) . "</li>";
+}
+
+$stmt->close();
 
 ?>
 <!doctype html>
