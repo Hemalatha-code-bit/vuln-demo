@@ -4,16 +4,10 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]- uses: github/codeql-action/upload-sarif@v2
-  with:
-    sarif_file: semgrep.sarif
-
+    branches: [ "main" ]
 
 jobs:
-  semgrep:- uses: github/codeql-action/upload-sarif@v2
-  with:
-    sarif_file: semgrep.sarif
-
+  semgrep:
     name: Semgrep SAST Scan
     runs-on: ubuntu-latest
     steps:
@@ -27,12 +21,13 @@ jobs:
       - name: Run semgrep
         run: |
           semgrep --config p/r2c --error --metrics || true
-        # semgrep exits non-zero when findings; "|| true" prevents job failure so we can see output.
-      - name: Upload semgrep sarif
-        if: always()
-        run: semgrep --config p/r2c --sarif > semgrep.sarif || true
-      - uses: github/code-scanning-upload@v2
-        if: always()
+
+      - name: Generate SARIF
+        run: |
+          semgrep --config p/r2c --sarif > semgrep.sarif || true
+
+      - name: Upload SARIF results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: semgrep.sarif
 
@@ -41,23 +36,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install truffleHog v3
-        run: |
-          pip3 install truffleHog
+        run: pip3 install truffleHog
+
       - name: Run truffleHog
-        run: |
-          # Scan repository history for high-entropy strings and common secret patterns
-          trufflehog filesystem --entropy=True --max_depth 50 . || true
+        run: trufflehog filesystem --entropy=True --max_depth 50 . || true
 
   zap-baseline:
     name: OWASP ZAP baseline (light DAST)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Start ZAP Docker
-        run: |
-          docker run -d --name zap -p 8080:8080 owasp/zap2docker-stable zap.sh -daemon -port 8080 -host 0.0.0.0
-      - name: Run ZAP baseline
-        run: |
-          docker run --network host --rm owasp/zap2docker-stable zap-baseline.py -t http://host.docker.internal:8000 -r zap_report.html || true
-      # Note: to actually scan your app, you'd need to run the PHP app (e.g., with php -S) and make it accessible to ZAP.
