@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-    
+
 permissions:
   actions: read
   security-events: write
@@ -22,14 +22,14 @@ jobs:
           python3 -m pip install --upgrade pip
           pip3 install semgrep
 
-      - name: Run Semgrep
-        run: semgrep --config p/php --error --metrics || true
+      - name: Run Semgrep security scan
+        run: semgrep --config https://semgrep.dev/p/r2c-php --error --metrics
 
-      - name: Generate SARIF
-        run: semgrep --config p/php --sarif > semgrep.sarif || true
+      - name: Generate SARIF report
+        run: semgrep --config https://semgrep.dev/p/r2c-php --sarif > semgrep.sarif
 
       - name: Upload SARIF results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
 
@@ -42,5 +42,5 @@ jobs:
       - name: Install Trufflehog
         run: pip3 install truffleHog
 
-      - name: Run Trufflehog
+      - name: Run Trufflehog secret scan
         run: trufflehog filesystem --entropy=True --max_depth 50 . || true
