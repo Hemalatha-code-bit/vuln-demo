@@ -23,10 +23,10 @@ jobs:
           pip3 install semgrep
 
       - name: Run Semgrep security scan
-        run: semgrep --config https://semgrep.dev/p/r2c-php --error
+        run: semgrep --config https://semgrep.dev/p/php --error
 
       - name: Generate SARIF report
-        run: semgrep --config https://semgrep.dev/p/r2c-php --sarif > semgrep.sarif
+        run: semgrep --config https://semgrep.dev/p/php --sarif > semgrep.sarif
 
       - name: Upload SARIF results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
