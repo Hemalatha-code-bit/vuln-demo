@@ -23,7 +23,7 @@ jobs:
           pip3 install semgrep
 
       - name: Run Semgrep security scan
-        run: semgrep --config https://semgrep.dev/p/r2c-php --error --metrics
+        run: semgrep --config https://semgrep.dev/p/r2c-php --error
 
       - name: Generate SARIF report
         run: semgrep --config https://semgrep.dev/p/r2c-php --sarif > semgrep.sarif
