@@ -33,14 +33,12 @@ jobs:
         with:
           sarif_file: semgrep.sarif
 
-  secret-scan:
-    name: Secret scanning (Trufflehog)
+   secret-scan:
+    name: Trufflehog Secret Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install Trufflehog
         run: pip3 install truffleHog
-
-      - name: Run Trufflehog secret scan
-        run: trufflehog filesystem --entropy=True --max_depth 50 . || true
+      - name: Run Secret Scan
+        run: trufflehog filesystem --entropy=True --max_depth 50 .
