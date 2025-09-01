@@ -2,20 +2,19 @@ name: SAST + Secret Scanning
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - "main"
   pull_request:
-    branches: [ "main" ]
-
-permissions:
-  actions: read
-  security-events: write
+    branches: 
+      - "main"
 
 jobs:
   semgrep:
     name: Semgrep SAST Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install Semgrep
         run: |
@@ -33,12 +32,15 @@ jobs:
         with:
           sarif_file: semgrep.sarif
 
-   secret-scan:
+  secret-scan:
     name: Trufflehog Secret Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install Trufflehog
         run: pip3 install truffleHog
+
       - name: Run Secret Scan
         run: trufflehog filesystem --entropy=True --max_depth 50 .
